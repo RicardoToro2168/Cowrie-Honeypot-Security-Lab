@@ -62,10 +62,27 @@ Simplified logical architecture showing the primary telemetry and management pat
 ## Key Design Decisions
 
 * **Target Exposure:** Cowrie is exposed publicly on standard SSH (`TCP/22`) to attract automated scanners and brute-force attempts.
-* **Management Isolation:** Legitimate administrative SSH is remapped to non-standard port `TCP/22022` with key-based authentication.
+* **Management Isolation:** Legitimate administrative SSH is moved to TCP/22022, protected with key-based authentication, and restricted by UFW to connections originating from my trusted home public IP. All other inbound connection attempts to the administrative SSH port are denied by the host firewall.
 * **Encrypted Telemetry Transport:** Wazuh telemetry transported over **WireGuard** tunnel.
-* **Least-Privilege Network Access:** Host firewall rules (UFW/iptables) restrict inbound, outbound, and VPN traffic to explicitly required communication paths.
+* **Least-Privilege Network Access:** Host firewall rules (UFW/iptables) restrict traffic to explicitly required communication paths. Public access is permitted to Cowrie on TCP/22, while administrative SSH on TCP/22022 is limited to a trusted source IP and WireGuard/Wazuh communication is separately constrained.
 * **Dual-Tier Security Monitoring:** Expected Cowrie attacker telemetry is classified separately from host-level security events, with host-compromise indicators receiving higher investigative priority.
+
+---
+
+### Administrative Access Control
+
+The real SSH service is intentionally separated from the honeypot and listens on `TCP/22022`.
+
+Administrative access is protected through multiple controls:
+
+- **Source-IP allowlisting:** UFW permits access to `TCP/22022` only from my trusted home public IP.
+- **Key-based authentication:** Administrative SSH requires SSH key authentication rather than password-based access.
+- **Service separation:** Internet-facing SSH traffic on `TCP/22` is directed to Cowrie rather than the real SSH service.
+- **Security monitoring:** Authentication activity involving the administrative SSH service is monitored separately from honeypot activity.
+
+Unauthorized Internet sources are blocked by UFW before they can reach the administrative SSH service.
+
+The trusted source IP is intentionally omitted from this repository as operational security information.
 
 ---
 
@@ -136,7 +153,7 @@ The environment maintains two distinct alert models: **Attacker Telemetry** (exp
 ### 2. Host Security Monitoring
 | Event | Investigative Priority |
 | :--- | :--- |
-| Failed administrative SSH login | Medium / High |
+| Administrative SSH authentication failure from trusted management source | Medium / High |
 | Repeated administrative SSH failures | High |
 | Unexpected successful administrative login | High / Critical |
 | Cowrie configuration modification | High |
