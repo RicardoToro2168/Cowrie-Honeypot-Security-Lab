@@ -1,15 +1,35 @@
-Internet-Exposed Cowrie Honeypot with Wazuh SIEM Monitoring
-Overview
+# Internet-Exposed Cowrie Honeypot with Wazuh SIEM Monitoring
+
+An Internet-facing SSH honeypot architecture designed to collect attacker telemetry, analyze post-exploitation behavior, and monitor host integrity using a self-hosted Wazuh SIEM environment.
+
+---
+
+## Overview
 
 This project documents the design and deployment of an Internet-facing SSH honeypot using Cowrie on a Debian VPS, integrated with a self-hosted Wazuh SIEM environment.
 
-The goal was not only to collect SSH attack activity, but to build a small defensive monitoring architecture around the honeypot. Cowrie captures attacker interactions on TCP/22, while the VPS itself is monitored for signs of compromise such as unexpected services, configuration changes, real SSH authentication, and loss of security telemetry.
+The goal was not only to collect SSH attack activity, but to build a small defensive monitoring architecture around the honeypot.
 
-Security events are forwarded from the VPS to Wazuh through a dedicated WireGuard tunnel.
+Cowrie captures attacker interactions on TCP/22, while the underlying VPS is monitored for signs of actual compromise, including:
 
-Architecture
+* Unexpected services or processes
+* Configuration changes
+* Real SSH authentication
+* Wazuh agent disconnection
+* Cowrie service failure
+* Unexpected network listeners
+
+  
+
+Security telemetry is forwarded from the VPS to Wazuh through a dedicated WireGuard VPN tunnel.
+
+---
+
+## Architecture
+
 ```mermaid
 flowchart TD
+
     Internet[Internet Attackers] -->|SSH TCP/22| Cowrie
 
     subgraph VPS[Debian VPS]
@@ -35,133 +55,146 @@ flowchart TD
         Indexer --> Dashboard
     end
 ```
-Key Design Decisions
-Cowrie exposed publicly on TCP/22
-Legitimate administrative SSH moved to TCP/22022
-Wazuh telemetry transported over WireGuard
-Firewall rules restrict VPS access to monitoring infrastructure
-Cowrie activity is treated separately from real VPS activity
-Host-level monitoring is used to detect possible honeypot escape or compromise
-Technologies Used
-Cowrie
-Debian Linux
-Wazuh
-WireGuard
-SSH
-UFW / iptables
-Docker
-JSON log ingestion
-File Integrity Monitoring
-Custom Wazuh rules and monitoring logic
-Honeypot Configuration
+Simplified logical architecture showing the primary telemetry and management paths.
 
-The Cowrie environment was customized to provide a more believable Linux target rather than using only the default filesystem.
+---
 
-Simulated artifacts include:
+## Key Design Decisions
 
-/home/admin
-/srv/backups
-/etc/cron.d/nightly-backup
-/opt/backup/rotate.sh
+* **Target Exposure:** Cowrie is exposed publicly on standard SSH (`TCP/22`) to attract automated scanners and brute-force attempts.
+* **Management Isolation:** Legitimate administrative SSH is remapped to non-standard port `TCP/22022` with key-based authentication.
+* **Encrypted Telemetry Transport:** Wazuh telemetry transported over **WireGuard** tunnel.
+* **Least-Privilege Network Access:** Host firewall rules (UFW/iptables) restrict inbound, outbound, and VPN traffic to explicitly required communication paths.
+* **Dual-Tier Security Monitoring:** Expected Cowrie attacker telemetry is classified separately from host-level security events, with host-compromise indicators receiving higher investigative priority.
 
-The environment also contains simulated users and service-account artifacts intended to encourage attacker enumeration and post-authentication activity.
+---
 
-No real credentials or sensitive information are intentionally exposed through the honeypot.
+## Technologies Used
 
-Wazuh Integration
+| Category | Technologies / Tools |
+| :--- | :--- |
+| **Honeypot & Emulation** | Cowrie |
+| **Operating Systems** | Debian Linux, Ubuntu Server |
+| **SIEM & Monitoring** | Wazuh Manager, Wazuh Agent, Custom XML Detection Rules |
+| **Networking & Security** | WireGuard VPN, UFW, `iptables`, SSH, OpenSSH |
+| **Infrastructure**        | Docker                                                     |
+| **Data & Log Analysis** | Structured JSON Ingestion, File Integrity Monitoring (FIM) |
 
-Cowrie generates structured JSON telemetry that is collected by the Wazuh agent.
+---
 
-The monitoring pipeline is:
+## Honeypot Configuration
 
-Internet Attack
-      ↓
-Cowrie
-      ↓
-Cowrie JSON Logs
-      ↓
-Wazuh Agent
-      ↓
-WireGuard
-      ↓
-Wazuh Manager
-      ↓
-Detection / Alert
-      ↓
-Investigation
+The Cowrie environment was customized to present a more believable Linux server persona with administrative, service-account, scheduled-task, and backup artifacts rather than relying entirely on the default filesystem template.
 
-This allows honeypot events to be analyzed alongside host-level security activity.
+### Simulated Artifacts
+* `/home/admin`
+* `/srv/backups`
+* `/etc/cron.d/nightly-backup`
+* `/opt/backup/rotate.sh`
 
-Detection and Monitoring
+The environment includes customized fake users, fake directory trees, and service account artifacts designed to encourage attacker post-authentication enumeration. 
 
-The project is designed to monitor both attacker activity inside Cowrie and possible compromise of the VPS itself.
+> [!CAUTION]
+> No real credentials, production API keys, or sensitive internal data are intentionally exposed within the simulated honeypot environment.
 
-Honeypot Activity
+---
 
-Monitored Cowrie events include:
+## Wazuh Integration & Telemetry Pipeline
 
-cowrie.session.file_download
-cowrie.session.file_upload
-cowrie.direct-tcpip.request
-Authentication attempts
-Successful honeypot logins
-Commands executed by attackers
-Session activity
-Host Security Monitoring
+Cowrie generates structured JSON telemetry (`cowrie.json`) that is ingested locally by the Wazuh agent and passed back to the lab environment.
 
-Higher-priority monitoring includes:
+```text
+[ Internet Attack ] 
+        │ (TCP/22)
+        ▼
+[ Cowrie Honeypot ] ──► [ Local JSON Logs ]
+                                │
+                                ▼
+                        [ Wazuh Agent ]
+                                │
+                                ▼ (WireGuard Tunnel)
+                        [ Wazuh Manager ] ──► [ Wazuh Rules / Custom Detections ]
+                                                        │
+                                                        ▼
+                                                [ Dashboard & Alert ]
 
-Successful or failed real SSH authentication on TCP/22022
-Cowrie configuration changes
-SSH configuration changes
-Wazuh agent disconnection
-Cowrie service failure
-Unexpected processes
-Unexpected network listeners
-Firewall or network configuration changes
+```
+---
 
+## Detection and Monitoring
+
+The environment maintains two distinct alert models: **Attacker Telemetry** (expected noise) and **Host Compromise Signals** (high-priority investigation).
+
+### 1. Honeypot Activity
+| Event | Investigative Priority |
+| :--- | :--- |
+| `cowrie.session.file_download` / `file_upload` | Medium |
+| `cowrie.direct-tcpip.request` (Port forwarding / proxy attempts) | Medium |
+| SSH credential guessing and brute-force attempts | Low |
+| Successful decoy logins and executed shell commands | Medium |
+
+### 2. Host Security Monitoring
+| Event | Investigative Priority |
+| :--- | :--- |
+| Failed administrative SSH login | Medium / High |
+| Repeated administrative SSH failures | High |
+| Unexpected successful administrative login | High / Critical |
+| Cowrie configuration modification | High |
+| Unexpected Wazuh agent termination | High / Critical |
+| Unexpected network listener | High |
+<br>
 This distinction is important because malicious activity inside the honeypot is expected, while unexpected activity affecting the actual VPS may indicate a real compromise.
 
-Example Investigation
-Malformed SSH Traffic
+---
 
-The honeypot captured unusual SSH traffic that generated a Cowrie alert containing a raw hexadecimal payload.
+## MITRE ATT&CK Mapping
 
-Analysis of the packet identified SSH protocol structures including:
+Observed attacker behaviors inside the honeypot and host monitoring controls are aligned with the MITRE ATT&CK framework:
 
-ssh-connection
-publickey
-ssh-rsa
+| Tactic | Technique | ID | Observed Evidence |
+| :--- | :--- | :--- | :--- |
+| **Credential Access** | Brute Force: Password Guessing | `T1110.001` | Repeated SSH credential attempts |
+| **Execution** | Command and Scripting Interpreter: Unix Shell | `T1059.004` | Shell commands executed after decoy authentication |
+| **Discovery** | File and Directory Discovery | `T1083` | `ls`, `find`, and directory enumeration |
 
-The investigation involved:
+---
 
-Extracting the hexadecimal payload
-Converting the payload into readable binary and ASCII data
-Identifying SSH protocol fields
-Reviewing the packet structure
-Determining whether the behavior appeared malformed, automated, or potentially exploit-related
+## Example Investigation
+### Malformed SSH Traffic
 
-A full sanitized analysis will be documented in:
+The honeypot flagged an anomaly involving malformed SSH traffic that generated a raw hexadecimal payload in Cowrie's logs.
 
-investigations/attack-case-001.md
-Challenges and Lessons Learned
-Honeypot Filesystem Emulation
+### Analytical Approach
+1. **Extraction:** Isolated the raw hexadecimal payload from Cowrie's session log.
+2. **Decoding:** Converted the hex stream into ASCII and binary representation to evaluate packet structure.
+3. **Protocol Identification:** Identified recognizable SSH protocol/authentication fields including `ssh-connection`, `publickey`, and `ssh-rsa`
+4. **Triage:** Evaluated packet boundary markers to determine if the payload represented an exploit attempt, custom scanner fingerprint, or protocol fuzzing.
 
-Troubleshooting Cowrie's simulated filesystem required understanding the difference between the actual VPS filesystem and the environment presented to attackers.
+### Finding
 
-Secure Monitoring Architecture
+The payload contained recognizable SSH authentication structures, including `ssh-connection`, `publickey`, and `ssh-rsa`, but the public-key authentication request was malformed.
 
-Connecting an Internet-facing honeypot to a private monitoring environment introduced an important trust boundary. WireGuard and restrictive firewall rules were used to prevent the honeypot from gaining unnecessary access to the internal network.
+The packet structure is consistent with probing associated with **CVE-2018-15473**, an OpenSSH username-enumeration vulnerability that relies on intentionally malformed authentication requests to identify differences in server behavior for valid and invalid usernames.
 
-Logging vs. Detection
+Public proof-of-concept implementations of CVE-2018-15473 similarly generate malformed SSH public-key authentication messages to perform username enumeration.
 
-Collecting logs alone does not create useful security monitoring. Events must be parsed, evaluated, correlated, and turned into actionable alerts.
+Although the observed packet closely resembles this technique, the available honeypot telemetry is not sufficient to conclusively attribute the source to a specific CVE-2018-15473 exploit implementation. The event was therefore assessed as a *likely OpenSSH username-enumeration probe consistent with CVE-2018-15473*, rather than a confirmed exploitation attempt
 
-Monitoring the Host
+**Full Analysis Walkthrough:** [`investigations/attack-case-001.md`](investigations/attack-case-001.md)
 
-Because malicious activity inside Cowrie is expected, host-level monitoring is critical. Real SSH activity, unexpected processes, configuration changes, and security-agent failures are treated as significantly higher-risk events.
+---
 
-Repository Structure
+## Key Takeaways & Lessons Learned
+
+* **Trust Boundaries Matter:** Connecting an Internet-exposed honeypot to private monitoring infrastructure introduces a high-risk trust boundary. WireGuard and restrictive firewall policies limit the VPS's ability to communicate with private infrastructure if the host is compromised.
+* **Noise vs. Actionable Telemetry:** Logging everything is trivial; surfacing relevant alerts requires tuning. Disambiguating expected decoy logs from legitimate host alerts prevents analyst alert fatigue.
+* **Host Monitoring is Critical:** Host-level FIM, service monitoring, and process/listener visibility provide an additional layer of detection for activity affecting the underlying VPS.
+
+---
+
+## Repository Structure
+
+```text
 cowrie-honeypot-security-lab/
 │
 ├── README.md
@@ -186,19 +219,18 @@ cowrie-honeypot-security-lab/
 └── docs/
     ├── security-controls.md
     └── wazuh-integration.md
-Future Improvements
-Add additional custom Wazuh detections
-Add sanitized alert screenshots
-Document more attacker sessions
-Add IOC and malware-hash analysis
-Add IP geolocation enrichment
-Map observed behavior to MITRE ATT&CK
-Build scripts for Cowrie session analysis
-Create Wazuh dashboards for honeypot activity
-Security Notice
+```
 
-All configuration examples in this repository are sanitized.
+---
 
-Private keys, credentials, tokens, certificates, and unnecessary infrastructure details are excluded or replaced with placeholders.
+## Future Roadmap
 
-This project is operated for defensive cybersecurity research, monitoring, and education.
+- [ ] Implement automated IP geolocation lookup via custom Wazuh integrations.
+- [ ] Add automated malware hash lookup against VirusTotal API for downloaded payloads.
+- [ ] Expand custom threat intel dashboards within the Wazuh UI.
+- [ ] Build automated log-parsing scripts for attacker session playback summaries.
+
+---
+
+## Security & Sanitization Notice
+Sensitive operational information has been removed or replaced with non-functional placeholders. Private lab addressing may be retained where useful to demonstrate network architecture and does not identify publicly reachable infrastructure. This environment exists purely for defensive research, educational purposes, and security analysis.
