@@ -197,7 +197,7 @@ Public proof-of-concept implementations of CVE-2018-15473 similarly generate mal
 
 Although the observed packet closely resembles this technique, the available honeypot telemetry is not sufficient to conclusively attribute the source to a specific CVE-2018-15473 exploit implementation. The event was therefore assessed as a *likely OpenSSH username-enumeration probe consistent with CVE-2018-15473*, rather than a confirmed exploitation attempt
 
-**Full Analysis Walkthrough Coming Soon:** <!-- [`investigations/attack-case-001.md`](investigations/attack-case-001.md) -->
+**Full Analysis Walkthrough Coming Soon:** [`investigations/attack-case-001.md`](investigations/ssh-attack-case-001.md)
 
 ---
 
