@@ -334,9 +334,9 @@ evidence/
 
 ## References
 
-* **RFC 4252:** The Secure Shell (SSH) Authentication Protocol
-* **NVD:** CVE-2018-15473 Detail
-* **OpenSSH:** OpenSSH 7.8 Release Notes
+* **RFC 4252:** [The Secure Shell (SSH) Authentication Protocol](https://datatracker.ietf.org/doc/html/rfc4252)
+* **NVD:** [CVE-2018-15473 Detail](https://nvd.nist.gov/vuln/detail/CVE-2018-15473)
+* **OpenSSH:** [OpenSSH 7.8 Release Notes](https://www.openssh.com/txt/release-7.8)
 
 ---
 
