@@ -322,10 +322,14 @@ Supporting sanitized evidence for this investigation is maintained under:
 
 ```text
 evidence/
-└── attack-case-001/
-    ├── wazuh-alert.png
+└── ssh-attack-case-001/
+    ├── README.md
     ├── cowrie-event.json
-    └── packet-analysis.txt
+    ├── packet-analysis.txt
+    ├── cyberchef-decoding.png
+    ├── abuseipdb.png
+    ├── greynoise.png
+    └── otx.png
 ```
 
 *(Sensitive operational information, including public infrastructure addresses and unnecessary identifying metadata, has been sanitized.)*
