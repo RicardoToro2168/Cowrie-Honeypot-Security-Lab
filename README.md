@@ -166,7 +166,7 @@ This distinction is important because malicious activity inside the honeypot is 
 
 ## MITRE ATT&CK Mapping
 
-Observed attacker behaviors inside the honeypot and host monitoring controls are aligned with the MITRE ATT&CK framework:
+Observed attacker behaviors inside the honeypot and host monitoring controls are aligned with the MITRE ATT&CK framework. Common occurrences include:
 
 | Tactic | Technique | ID | Observed Evidence |
 | :--- | :--- | :--- | :--- |
