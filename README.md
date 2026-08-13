@@ -111,7 +111,7 @@ The Cowrie environment was customized to present a more believable Linux server 
 
 The environment includes customized fake users, fake directory trees, and service account artifacts designed to encourage attacker post-authentication enumeration. 
 
-> [!CAUTION]
+> [!NOTE]
 > No real credentials, production API keys, or sensitive internal data are intentionally exposed within the simulated honeypot environment.
 
 ---
