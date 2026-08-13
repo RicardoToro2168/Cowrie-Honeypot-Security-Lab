@@ -113,6 +113,6 @@ The hash evidence independently corroborates the malware assessment while the be
 
 Tanzania Computer Emergency Response Team (TZ-CERT)  
 Honeypot Weekly Report — Report No. TZ-CERT/WRHP/2026/31  
-https://www.tzcert.go.tz/report/TZCERT-HON-26-0105-honeypot-report-3rd-august-2026/download
+[PDF Download](https://www.tzcert.go.tz/report/TZCERT-HON-26-0105-honeypot-report-3rd-august-2026/download)
 
 **Threat-intelligence review date:** 2026-08-13
