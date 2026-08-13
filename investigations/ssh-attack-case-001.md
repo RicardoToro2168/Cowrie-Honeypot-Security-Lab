@@ -23,7 +23,7 @@ The observed packet closely matches the malformed request structure used to trig
 | **Destination Service** | SSH / `TCP/22` |
 | **Source IP** | `[REDACTED]` |
 | **Source Port** | `59124` |
-| **Timestamp** | `Aug 9, 2026 @ 18:57:32.979 UTC' |
+| **Timestamp** | `Aug 9, 2026 @ 18:57:32.979 UTC` |
 | **Alert Type** | Malformed SSH traffic / possible exploit |
 | **Suspected Activity** | SSH username enumeration |
 | **Related Vulnerability** | CVE-2018-15473 |
