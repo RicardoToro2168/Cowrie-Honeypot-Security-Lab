@@ -31,8 +31,6 @@ The corresponding transfer events are retained separately in:
 **Source:** Tanzania Computer Emergency Response Team (TZ-CERT)  
 **Report:** Honeypot Weekly Report — Report No. TZ-CERT/WRHP/2026/31  
 **Reporting Period:** July 27–August 2, 2026  
-**URL:**  
-https://www.tzcert.go.tz/report/TZCERT-HON-26-0105-honeypot-report-3rd-august-2026/download
 
 TZ-CERT Table 2 lists the top malware samples observed by its honeypot infrastructure for the reporting period. All five binary SHA-256 values captured in SSH Attack Case 002 appear in that table.
 
