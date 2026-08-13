@@ -176,29 +176,18 @@ Observed attacker behaviors inside the honeypot and host monitoring controls are
 
 ---
 
-## Example Investigation
-### Malformed SSH Traffic
 
-The honeypot flagged an anomaly involving malformed SSH traffic that generated a raw hexadecimal payload in Cowrie's logs.
 
-### Analytical Approach
-1. **Extraction:** Isolated the raw hexadecimal payload from Cowrie's session log.
-2. **Decoding:** Converted the hex stream into ASCII and binary representation to evaluate packet structure.
-3. **Protocol Identification:** Identified recognizable SSH protocol/authentication fields including `ssh-connection`, `publickey`, and `ssh-rsa`
-4. **Triage:** Evaluated packet boundary markers to determine if the payload represented an exploit attempt, custom scanner fingerprint, or protocol fuzzing.
+## Featured Investigations
+### [Case 001 – Malformed SSH Authentication Probe](./investigations/ssh-attack-case-001.md)
+Investigated suspicious SSH authentication traffic captured by Cowrie, correlated the activity with CVE-2018-15473, documented evidence limitations, and mapped observed behavior to MITRE ATT&CK.
 
-### Finding
+### [Case 002 – RedTail Malware Deployment via SSH/SFTP](./investigations/ssh-attack-case-002.md)
+Captured and investigated a multi-architecture malware deployment involving SFTP-delivered payloads, cleanup scripts, SSH persistence, artifact deletion, SHA-256 preservation, and threat-intelligence correlation.
 
-The payload contained recognizable SSH authentication structures, including `ssh-connection`, `publickey`, and `ssh-rsa`, but the public-key authentication request was malformed.
+<br>
 
-The packet structure is consistent with probing associated with **CVE-2018-15473**, an OpenSSH username-enumeration vulnerability that relies on intentionally malformed authentication requests to identify differences in server behavior for valid and invalid usernames.
-
-Public proof-of-concept implementations of CVE-2018-15473 similarly generate malformed SSH public-key authentication messages to perform username enumeration.
-
-Although the observed packet closely resembles this technique, the available honeypot telemetry is not sufficient to conclusively attribute the source to a specific CVE-2018-15473 exploit implementation. The event was therefore assessed as a *likely OpenSSH username-enumeration probe consistent with CVE-2018-15473*, rather than a confirmed exploitation attempt
-
-**Full Analysis Walkthrough:** [`Malformed SSH Traffic Investigation`](investigations/ssh-attack-case-001.md)
-
+> **Current focus:** Static malware analysis of the captured RedTail x86-64 sample.
 ---
 
 ## Key Takeaways & Lessons Learned
