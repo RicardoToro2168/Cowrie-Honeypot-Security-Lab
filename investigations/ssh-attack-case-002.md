@@ -546,6 +546,32 @@ Part 2 will focus on static analysis before any controlled dynamic analysis is c
 
 ---
 
+## Evidence
+
+Supporting evidence collected during this investigation is available in the
+[`evidence`](../evidence/ssh-attack-case-002) directory.
+
+Evidence includes:
+
+- Sanitized Cowrie session telemetry
+- SFTP file-transfer events
+- Original attacker command
+- SHA-256 hashes of all transferred artifacts
+- Analyst-reviewed copies of `clean.sh` and `setup.sh`
+
+
+> **Malware Handling Notice:** The executable RedTail samples are intentionally
+> excluded from this public repository. SHA-256 hashes and analysis artifacts
+> are provided instead. Original malware specimens are retained separately for
+> controlled analysis.
+
+The shell-script copies included in this repository were modified by the analyst
+to permit safe storage due to endpoint antivirus detection. Their original
+Cowrie-recorded SHA-256 values are preserved in `evidence/hashes/sha256.txt`,
+and all modifications are documented in `evidence/scripts/README.md`.
+
+---
+
 ## References
 
 1. MITRE ATT&CK – [SSH Authorized Keys (T1098.004)](https://attack.mitre.org/techniques/T1098/004)
