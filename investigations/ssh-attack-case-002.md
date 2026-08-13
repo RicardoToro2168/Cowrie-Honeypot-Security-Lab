@@ -582,4 +582,4 @@ and all modifications are documented in `evidence/scripts/README.md`.
 6. MITRE ATT&CK – [File Deletion (T1070.004)](https://attack.mitre.org/techniques/T1070/004)
 7. MITRE ATT&CK – [Compute Hijacking (T1496.001)](https://attack.mitre.org/techniques/T1496/001)
 8. SANS Internet Storm Center – [RedTail / Linux SSH honeypot investigations](https://isc.sans.edu/diary/32024)
-9. Tanzania Computer Emergency Response Team – [Honeypot Weekly Report, July 27–August 2, 2026](https://www.tzcert.go.tz/report/TZCERT-HON-26-0105-honeypot-report-3rd-august-2026)
+9. Tanzania Computer Emergency Response Team **PDF** – [Honeypot Weekly Report, July 27–August 2, 2026 *PDF Download*](https://www.tzcert.go.tz/report/TZCERT-HON-26-0105-honeypot-report-3rd-august-2026/download)
