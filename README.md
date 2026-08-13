@@ -209,7 +209,7 @@ Although the observed packet closely resembles this technique, the available hon
 
 ---
 
-## Repository Structure
+<!-- ## Repository Structure
 
 ```text
 cowrie-honeypot-security-lab/
@@ -237,7 +237,7 @@ cowrie-honeypot-security-lab/
     ├── security-controls.md
     └── wazuh-integration.md
 ```
-
+-->
 ---
 
 ## Future Roadmap
