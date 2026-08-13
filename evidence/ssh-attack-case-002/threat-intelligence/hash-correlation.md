@@ -88,11 +88,11 @@ They are **not** asserted to be the source IP observed in SSH Attack Case 002, a
 
 The defensible correlation is:
 
-**same SHA-256 → same binary content**
+**same SHA-256 = same binary content**
 
 It does not establish:
 
-**same SHA-256 → same human operator or source infrastructure**
+**same SHA-256 = same human operator or source infrastructure**
 
 ---
 
