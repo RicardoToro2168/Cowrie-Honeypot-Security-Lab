@@ -18,7 +18,7 @@ Full investigation:
 | `cyberchef-decoding.png` | Screenshot showing hexadecimal decoding and identification of SSH protocol fields using CyberChef.    |
 | `abuseipdb.png`          | AbuseIPDB enrichment for the observed source IP at the time of investigation.                         |
 | `greynoise.png`          | GreyNoise classification and contextual information for the observed source infrastructure.           |
-| `otx.png`                | AlienVault OTX threat-intelligence enrichment associated with the observed source IP.                 |
+| `alienvault.png`                | AlienVault OTX threat-intelligence enrichment associated with the observed source IP.                 |
 
 ---
 
