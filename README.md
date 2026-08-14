@@ -1,6 +1,6 @@
-# Internet-Exposed Cowrie Honeypot with Wazuh SIEM Monitoring
+# Cowrie Honeypot Security Lab — Wazuh SIEM, Detection Engineering & Threat Investigation
 
-An Internet-facing SSH honeypot architecture designed to collect attacker telemetry, analyze post-exploitation behavior, and monitor host integrity using a self-hosted Wazuh SIEM environment.
+An Internet-facing SSH honeypot and defensive monitoring environment built to capture real attacker telemetry, investigate post-authentication activity, develop detections, preserve evidence, and monitor the underlying host for signs of actual compromise.
 
 ---
 
@@ -22,6 +22,59 @@ Cowrie captures attacker interactions on TCP/22, while the underlying VPS is mon
   
 
 Security telemetry is forwarded from the VPS to Wazuh through a dedicated WireGuard VPN tunnel.
+
+---
+
+## Project Highlights
+
+- Built and hardened an Internet-exposed Cowrie SSH honeypot on a Debian VPS.
+- Integrated Cowrie JSON telemetry with a self-hosted Wazuh SIEM over an isolated WireGuard tunnel.
+- Developed monitoring for both expected honeypot activity and indicators of actual VPS compromise.
+- Investigated real attacker sessions using Cowrie telemetry, protocol analysis, MITRE ATT&CK, and external threat intelligence.
+- Preserved and documented attacker-uploaded artifacts, including a multi-architecture RedTail malware deployment.
+- Current work is expanding the project into static malware analysis and deeper threat hunting.
+
+---
+
+## Featured Investigations
+### [Case 001 – Malformed SSH Authentication Probe](./investigations/ssh-attack-case-001.md)
+Investigated suspicious SSH authentication traffic captured by Cowrie, correlated the activity with CVE-2018-15473, documented evidence limitations, and mapped observed behavior to MITRE ATT&CK.
+
+### [Case 002 – RedTail Malware Deployment via SSH/SFTP](./investigations/ssh-attack-case-002.md)
+Captured and investigated a multi-architecture malware deployment involving SFTP-delivered payloads, cleanup scripts, SSH persistence, artifact deletion, SHA-256 preservation, and threat-intelligence correlation.
+
+<br>
+
+> **Current focus:** Static malware analysis of the captured RedTail x86-64 sample.
+
+## Investigation Evidence
+
+Each investigation is supported by sanitized evidence collected from the lab.
+
+```text
+investigations/
+├── ssh-attack-case-001.md
+└── ssh-attack-case-002.md
+
+evidence/
+├── ssh-attack-case-001/
+└── ssh-attack-case-002/
+    ├── cowrie/
+    ├── hashes/
+    ├── scripts/
+    └── threat-intelligence/
+```
+Evidence may include:
+
+- Sanitized Cowrie session telemetry
+- Original attacker commands
+- File-transfer records
+- SHA-256 indicators
+- Analyst-reviewed scripts
+- Threat-intelligence correlations
+- Derived analysis artifacts
+
+> Executable malware samples are intentionally excluded from the public repository.
 
 ---
 
@@ -71,18 +124,7 @@ Simplified logical architecture showing the primary telemetry and management pat
 
 ### Administrative Access Control
 
-The real SSH service is intentionally separated from the honeypot and listens on `TCP/22022`.
-
-Administrative access is protected through multiple controls:
-
-- **Source-IP allowlisting:** UFW permits access to `TCP/22022` only from my trusted home public IP.
-- **Key-based authentication:** Administrative SSH requires SSH key authentication rather than password-based access.
-- **Service separation:** Internet-facing SSH traffic on `TCP/22` is directed to Cowrie rather than the real SSH service.
-- **Security monitoring:** Authentication activity involving the administrative SSH service is monitored separately from honeypot activity.
-
-Unauthorized Internet sources are blocked by UFW before they can reach the administrative SSH service.
-
-The trusted source IP is intentionally omitted from this repository as operational security information.
+Cowrie remains exposed on TCP/22 to capture Internet-based SSH activity, while legitimate administrative SSH access is moved to TCP/22022. UFW restricts port 22022 to the administrator's trusted home IP, reducing exposure of the real SSH service. Honeypot traffic and administrative access are therefore logically separated, allowing Cowrie to remain publicly accessible without exposing the VPS management interface broadly to the Internet. Additional monitoring is configured to alert on authentication activity involving the real SSH service.
 
 ---
 
@@ -166,29 +208,22 @@ This distinction is important because malicious activity inside the honeypot is 
 
 ## MITRE ATT&CK Mapping
 
-Observed attacker behaviors inside the honeypot and host monitoring controls are aligned with the MITRE ATT&CK framework. Common occurrences include:
+Observed attacker behaviors captured during honeypot events and investigations include:
 
 | Tactic | Technique | ID | Observed Evidence |
-| :--- | :--- | :--- | :--- |
-| **Credential Access** | Brute Force: Password Guessing | `T1110.001` | Repeated SSH credential attempts |
-| **Execution** | Command and Scripting Interpreter: Unix Shell | `T1059.004` | Shell commands executed after decoy authentication |
-| **Discovery** | File and Directory Discovery | `T1083` | `ls`, `find`, and directory enumeration |
+|---|---|---|---|
+| Credential Access | Brute Force: Password Guessing | `T1110.001` | Repeated SSH credential attempts |
+| Execution | Command and Scripting Interpreter: Unix Shell | `T1059.004` | Shell commands and attacker-uploaded scripts |
+| Discovery | System Information Discovery | `T1082` | `uname -a`, `uname -mp` |
+| Discovery | File and Directory Discovery | `T1083` | `ls`, `find`, and filesystem enumeration |
+| Persistence | Account Manipulation: SSH Authorized Keys | `T1098.004` | Attacker-controlled key written to `~/.ssh/authorized_keys` |
+| Command and Control | Ingress Tool Transfer | `T1105` | Malware and scripts transferred via SFTP |
+| Defense Evasion | Indicator Removal: File Deletion | `T1070.004` | Deletion of deployment scripts and payload artifacts |
+| Impact | Resource Hijacking: Compute Hijacking | `T1496.001` | RedTail cryptomining deployment |
 
 ---
 
 
-
-## Featured Investigations
-### [Case 001 – Malformed SSH Authentication Probe](./investigations/ssh-attack-case-001.md)
-Investigated suspicious SSH authentication traffic captured by Cowrie, correlated the activity with CVE-2018-15473, documented evidence limitations, and mapped observed behavior to MITRE ATT&CK.
-
-### [Case 002 – RedTail Malware Deployment via SSH/SFTP](./investigations/ssh-attack-case-002.md)
-Captured and investigated a multi-architecture malware deployment involving SFTP-delivered payloads, cleanup scripts, SSH persistence, artifact deletion, SHA-256 preservation, and threat-intelligence correlation.
-
-<br>
-
-> **Current focus:** Static malware analysis of the captured RedTail x86-64 sample.
----
 
 ## Key Takeaways & Lessons Learned
 
@@ -231,10 +266,11 @@ cowrie-honeypot-security-lab/
 
 ## Future Roadmap
 
-- [ ] Implement automated IP geolocation lookup via custom Wazuh integrations.
-- [ ] Add automated malware hash lookup against VirusTotal API for downloaded payloads.
-- [ ] Expand custom threat intel dashboards within the Wazuh UI.
-- [ ] Build automated log-parsing scripts for attacker session playback summaries.
+- [ ] Complete static analysis of the captured RedTail x86-64 ELF sample.
+- [ ] Extract and document network and configuration indicators from captured malware.
+- [ ] Develop Wazuh detections based on findings from malware analysis.
+- [ ] Automate enrichment of captured file hashes using threat-intelligence sources.
+- [ ] Expand Wazuh dashboards for honeypot and threat-intelligence telemetry.
 
 ---
 
